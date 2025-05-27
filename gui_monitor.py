@@ -9,6 +9,9 @@ import os
 import logging
 from datetime import datetime
 import traceback
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 
 # Set up logging
 logging.basicConfig(
@@ -25,7 +28,7 @@ class Monitor:
         print("Initializing Monitor")
         self.root = root
         self.root.title("Video Processing Monitor")
-        self.root.geometry("600x400")
+        self.root.geometry("800x600")  # Increased size to accommodate graph
         
         # Initialize GPU monitoring
         try:
@@ -47,6 +50,27 @@ class Monitor:
         self.cpu_usage = 0
         self.memory_usage = 0
         self.last_update = datetime.now()
+        
+        # Initialize graph data
+        self.max_points = 100
+        self.time_history = []
+        self.progress_history = []
+        self.detections_history = []
+        self.fps_history = []
+        self.cpu_history = []
+        self.memory_history = []
+        self.gpu_history = []
+        
+        # Create figure and axes for plotting
+        self.fig, self.ax = plt.subplots(figsize=(8, 3))
+        self.ax.set_ylim(0, 100)  # Set y-axis limits
+        self.ax.set_xlabel('Time (s)')
+        self.ax.set_ylabel('Value')
+        self.ax.grid(True)
+        
+        # Create canvas for matplotlib
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)
+        self.canvas.get_tk_widget().pack(pady=10)
         
         # Start update thread
         self.update_thread = threading.Thread(target=self.update_monitor, daemon=True)
@@ -179,7 +203,6 @@ class Monitor:
 
     def update_gui(self):
         try:
-            # Update metrics display
             self.progress_var.set(f"{self.progress:.1f}%")
             self.detections_var.set(str(self.detections))
             self.fps_var.set(f"{self.fps:.1f}")
@@ -189,18 +212,38 @@ class Monitor:
             self.time_var.set(self.last_update.strftime('%H:%M:%S'))
             self.status_var.set("Running")
             
+            # Update graph data
+            current_time = datetime.now()
+            self.time_history.append(current_time)
+            self.progress_history.append(self.progress)
+            self.detections_history.append(self.detections)
+            self.fps_history.append(self.fps)
+            self.cpu_history.append(self.cpu_usage)
+            self.memory_history.append(self.memory_usage)
+            self.gpu_history.append(self.gpu_usage)
+            
+            # Keep only last max_points
+            if len(self.time_history) > self.max_points:
+                self.time_history.pop(0)
+                self.progress_history.pop(0)
+                self.detections_history.pop(0)
+                self.fps_history.pop(0)
+                self.cpu_history.pop(0)
+                self.memory_history.pop(0)
+                self.gpu_history.pop(0)
+            
+            # Convert time to relative seconds
+            time_seconds = [(t - self.time_history[0]).total_seconds() for t in self.time_history]
             
             # Clear previous lines
-            self.canvas.delete('line')
+            self.ax.clear()
             
-            # Calculate scaling
-            max_value = max(
-                max(self.progress_history),
-                max(self.detections_history),
-                max(self.fps_history),
-                max(self.cpu_history),
-                max(self.gpu_history)
-            )
+            # Plot metrics
+            self.ax.plot(time_seconds, self.progress_history, label='Progress', color='blue')
+            self.ax.plot(time_seconds, self.cpu_history, label='CPU', color='red')
+            self.ax.plot(time_seconds, self.memory_history, label='Memory', color='green')
+            self.ax.plot(time_seconds, self.gpu_history, label='GPU', color='orange')
+            self.ax.plot(time_seconds, self.fps_history, label='FPS', color='purple')
             
             if max_value == 0: max_value = 100  # Prevent division by zero
             

@@ -6,3 +6,4 @@ moviepy==1.0.3
 ffmpeg-python==0.2.0
 pynvml==11.505.58
 psutil==5.9.8
+matplotlib==2.2.5
