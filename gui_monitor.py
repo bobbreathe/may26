@@ -25,7 +25,7 @@ class Monitor:
         print("Initializing Monitor")
         self.root = root
         self.root.title("Video Processing Monitor")
-        self.root.geometry("600x400")  # Reduced size since we removed the graph
+        self.root.geometry("600x400")
         
         # Initialize GPU monitoring
         try:
@@ -45,6 +45,7 @@ class Monitor:
         self.fps = 0
         self.gpu_usage = 0
         self.cpu_usage = 0
+        self.memory_usage = 0
         self.last_update = datetime.now()
         
         # Start update thread
@@ -80,60 +81,25 @@ class Monitor:
         self.cpu_var = tk.StringVar(value="0.0%")
         ttk.Label(main_frame, textvariable=self.cpu_var).grid(row=3, column=1, sticky=tk.W)
         
-        # GPU Usage section
-        ttk.Label(main_frame, text="GPU Usage:").grid(row=4, column=0, sticky=tk.W)
-        self.gpu_var = tk.StringVar(value="0.0%")
-        ttk.Label(main_frame, textvariable=self.gpu_var).grid(row=4, column=1, sticky=tk.W)
-        
-        # Status section
-        ttk.Label(main_frame, text="Status:").grid(row=5, column=0, sticky=tk.W)
-        self.status_var = tk.StringVar(value="Initializing...")
-        ttk.Label(main_frame, textvariable=self.status_var).grid(row=5, column=1, sticky=tk.W)
-        
-        # Last update time
-        ttk.Label(main_frame, text="Last Update:").grid(row=6, column=0, sticky=tk.W)
-        self.time_var = tk.StringVar(value="-")
-        ttk.Label(main_frame, textvariable=self.time_var).grid(row=6, column=1, sticky=tk.W)
-
-    def create_widgets(self):
-        # Main frame
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
-        # Progress section
-        ttk.Label(main_frame, text="Progress:").grid(row=0, column=0, sticky=tk.W)
-        self.progress_var = tk.StringVar(value="0.0%")
-        ttk.Label(main_frame, textvariable=self.progress_var).grid(row=0, column=1, sticky=tk.W)
-        
-        # Detections section
-        ttk.Label(main_frame, text="Detections:").grid(row=1, column=0, sticky=tk.W)
-        self.detections_var = tk.StringVar(value="0")
-        ttk.Label(main_frame, textvariable=self.detections_var).grid(row=1, column=1, sticky=tk.W)
-        
-        # FPS section
-        ttk.Label(main_frame, text="FPS:").grid(row=2, column=0, sticky=tk.W)
-        self.fps_var = tk.StringVar(value="0.0")
-        ttk.Label(main_frame, textvariable=self.fps_var).grid(row=2, column=1, sticky=tk.W)
-        
-        # CPU Usage section
-        ttk.Label(main_frame, text="CPU Usage:").grid(row=3, column=0, sticky=tk.W)
-        self.cpu_var = tk.StringVar(value="0.0%")
-        ttk.Label(main_frame, textvariable=self.cpu_var).grid(row=3, column=1, sticky=tk.W)
+        # Memory Usage section
+        ttk.Label(main_frame, text="Memory Usage:").grid(row=4, column=0, sticky=tk.W)
+        self.memory_var = tk.StringVar(value="0.0%")
+        ttk.Label(main_frame, textvariable=self.memory_var).grid(row=4, column=1, sticky=tk.W)
         
         # GPU Usage section
-        ttk.Label(main_frame, text="GPU Usage:").grid(row=4, column=0, sticky=tk.W)
+        ttk.Label(main_frame, text="GPU Usage:").grid(row=5, column=0, sticky=tk.W)
         self.gpu_var = tk.StringVar(value="0.0%")
-        ttk.Label(main_frame, textvariable=self.gpu_var).grid(row=4, column=1, sticky=tk.W)
+        ttk.Label(main_frame, textvariable=self.gpu_var).grid(row=5, column=1, sticky=tk.W)
         
         # Status section
-        ttk.Label(main_frame, text="Status:").grid(row=5, column=0, sticky=tk.W)
+        ttk.Label(main_frame, text="Status:").grid(row=6, column=0, sticky=tk.W)
         self.status_var = tk.StringVar(value="Initializing...")
-        ttk.Label(main_frame, textvariable=self.status_var).grid(row=5, column=1, sticky=tk.W)
+        ttk.Label(main_frame, textvariable=self.status_var).grid(row=6, column=1, sticky=tk.W)
         
         # Last update time
-        ttk.Label(main_frame, text="Last Update:").grid(row=6, column=0, sticky=tk.W)
+        ttk.Label(main_frame, text="Last Update:").grid(row=7, column=0, sticky=tk.W)
         self.time_var = tk.StringVar(value="-")
-        ttk.Label(main_frame, textvariable=self.time_var).grid(row=6, column=1, sticky=tk.W)
+        ttk.Label(main_frame, textvariable=self.time_var).grid(row=7, column=1, sticky=tk.W)
 
     def get_gpu_usage(self):
         try:
@@ -164,22 +130,29 @@ class Monitor:
         while True:
             try:
                 # Read progress from log file
-                try:
-                    with open('d:\\logs\\video_processing.log', 'r') as f:
-                        data = json.loads(f.read())
-                        self.progress = data.get('progress', 0)
-                        self.detections = data.get('detections', 0)
-                        self.fps = data.get('fps', 0)
-                except Exception as e:
-                    logging.error(f"Error reading log file: {str(e)}")
-                    self.status_var.set(f"Error: {str(e)}")
-                    
+                self.read_progress()
+
                 # Get CPU usage
                 try:
                     self.cpu_usage = psutil.cpu_percent(interval=0.1)
                 except Exception as e:
                     logging.error(f"CPU monitoring error: {str(e)}")
                     self.cpu_usage = 0
+                
+                # Get memory usage
+                try:
+                    # Get system memory usage
+                    mem = psutil.virtual_memory()
+                    self.memory_usage = mem.percent
+                    
+                    # Also get process memory usage
+                    process = psutil.Process()
+                    mem_info = process.memory_info()
+                    process_mem_mb = mem_info.rss / (1024 * 1024)
+                    self.memory_var.set(f"{self.memory_usage:.1f}% (Process: {process_mem_mb:.1f} MB)")
+                except Exception as e:
+                    logging.error(f"Memory monitoring error: {str(e)}")
+                    self.memory_usage = 0
                 
                 # Get GPU usage
                 if self.handle:
@@ -211,27 +184,11 @@ class Monitor:
             self.detections_var.set(str(self.detections))
             self.fps_var.set(f"{self.fps:.1f}")
             self.cpu_var.set(f"{self.cpu_usage:.1f}%")
+            self.memory_var.set(f"{self.memory_usage:.1f}%")
             self.gpu_var.set(f"{self.gpu_usage:.1f}%")
             self.time_var.set(self.last_update.strftime('%H:%M:%S'))
             self.status_var.set("Running")
             
-            # Update graph data
-            current_time = datetime.now()
-            self.time_history.append(current_time)
-            self.progress_history.append(self.progress)
-            self.detections_history.append(self.detections)
-            self.fps_history.append(self.fps)
-            self.cpu_history.append(self.cpu_usage)
-            self.gpu_history.append(self.gpu_usage)
-            
-            # Keep only last max_points
-            if len(self.time_history) > self.max_points:
-                self.time_history.pop(0)
-                self.progress_history.pop(0)
-                self.detections_history.pop(0)
-                self.fps_history.pop(0)
-                self.cpu_history.pop(0)
-                self.gpu_history.pop(0)
             
             # Clear previous lines
             self.canvas.delete('line')
