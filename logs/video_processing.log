@@ -1,0 +1,37 @@
+2025-05-26 21:31:13,854 - root - INFO - Starting video processing script - food_sampling_detector.py:225
+2025-05-26 21:31:13,879 - root - INFO - FoodSamplingDetector initialized successfully - food_sampling_detector.py:70
+2025-05-26 21:31:13,879 - root - INFO - Starting video analysis of d:Input_videos\VID_20241020_095709_10_018.mp4 - food_sampling_detector.py:205
+2025-05-26 21:31:13,942 - root - ERROR - Main process error: MoviePy error: the file d:Input_videos\VID_20241020_095709_10_018.mp4 could not be found!
+Please check that you entered the correct path. - food_sampling_detector.py:217
+2025-05-26 21:31:13,943 - root - ERROR - Traceback (most recent call last):
+  File "d:\may26\food_sampling_detector.py", line 208, in main
+    detector.process_video(input_path, output_path)
+  File "d:\may26\food_sampling_detector.py", line 134, in process_video
+    clip = VideoFileClip(input_path)
+  File "C:\Users\colin\AppData\Local\Programs\Python\Python310\lib\site-packages\moviepy\video\io\VideoFileClip.py", line 88, in __init__
+    self.reader = FFMPEG_VideoReader(filename, pix_fmt=pix_fmt,
+  File "C:\Users\colin\AppData\Local\Programs\Python\Python310\lib\site-packages\moviepy\video\io\ffmpeg_reader.py", line 35, in __init__
+    infos = ffmpeg_parse_infos(filename, print_infos, check_duration,
+  File "C:\Users\colin\AppData\Local\Programs\Python\Python310\lib\site-packages\moviepy\video\io\ffmpeg_reader.py", line 270, in ffmpeg_parse_infos
+    raise IOError(("MoviePy error: the file %s could not be found!\n"
+OSError: MoviePy error: the file d:Input_videos\VID_20241020_095709_10_018.mp4 could not be found!
+Please check that you entered the correct path.
+ - food_sampling_detector.py:218
+2025-05-26 21:31:13,945 - root - ERROR - Script crashed: MoviePy error: the file d:Input_videos\VID_20241020_095709_10_018.mp4 could not be found!
+Please check that you entered the correct path. - food_sampling_detector.py:230
+2025-05-26 21:31:13,946 - root - ERROR - Traceback (most recent call last):
+  File "d:\may26\food_sampling_detector.py", line 227, in <module>
+    main()
+  File "d:\may26\food_sampling_detector.py", line 208, in main
+    detector.process_video(input_path, output_path)
+  File "d:\may26\food_sampling_detector.py", line 134, in process_video
+    clip = VideoFileClip(input_path)
+  File "C:\Users\colin\AppData\Local\Programs\Python\Python310\lib\site-packages\moviepy\video\io\VideoFileClip.py", line 88, in __init__
+    self.reader = FFMPEG_VideoReader(filename, pix_fmt=pix_fmt,
+  File "C:\Users\colin\AppData\Local\Programs\Python\Python310\lib\site-packages\moviepy\video\io\ffmpeg_reader.py", line 35, in __init__
+    infos = ffmpeg_parse_infos(filename, print_infos, check_duration,
+  File "C:\Users\colin\AppData\Local\Programs\Python\Python310\lib\site-packages\moviepy\video\io\ffmpeg_reader.py", line 270, in ffmpeg_parse_infos
+    raise IOError(("MoviePy error: the file %s could not be found!\n"
+OSError: MoviePy error: the file d:Input_videos\VID_20241020_095709_10_018.mp4 could not be found!
+Please check that you entered the correct path.
+ - food_sampling_detector.py:231
